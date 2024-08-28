@@ -4,12 +4,13 @@ import os
 import math
 
 import pytest
-
 from geobuf import Decoder, Encoder
 
-exclude = {'precision.json'}
+exclude = {"precision.json"}
 files = glob.glob(os.path.join(os.path.dirname(__file__), "fixtures/*.json"))
-coding_fixtures = [filename for filename in files if os.path.basename(filename) not in exclude]
+coding_fixtures = [
+    filename for filename in files if os.path.basename(filename) not in exclude
+]
 
 
 @pytest.mark.parametrize("filename", coding_fixtures)
@@ -26,7 +27,7 @@ def test_high_precision():
         geojson = json.loads(f.read())
     pbf = Encoder().encode(geojson)
     geojson2 = Decoder().decode(pbf)
-    ring = geojson2['features'][0]['geometry']['coordinates'][0]
+    ring = geojson2["features"][0]["geometry"]["coordinates"][0]
     assert ring[0] == ring[4]
 
 
@@ -39,14 +40,14 @@ def test_line_accumulating_error():
     line of 0.00000049 * 40 = 0.0000196 over the full length.
     """
     feature = {
-        'type': 'MultiPolygon',
-        'coordinates': [[[]]],
+        "type": "MultiPolygon",
+        "coordinates": [[[]]],
     }
     points = 40
     # X coordinates[0, 1.00000049, 2.00000098, 3.00000147, 4.00000196, ...,
     #               37.00001813, 38.00001862, 39.00001911, 40.00001960, 0]
-    feature['coordinates'][0][0] = [[i * 1.00000049, 0] for i in range(0, points + 1)]
-    feature['coordinates'][0][0].append([0, 0])
+    feature["coordinates"][0][0] = [[i * 1.00000049, 0] for i in range(0, points + 1)]
+    feature["coordinates"][0][0].append([0, 0])
     pbf = Encoder().encode(feature)
     round_tripped = Decoder().decode(pbf)
 
@@ -54,18 +55,18 @@ def test_line_accumulating_error():
         x, _ = coord
         return round(x * 1000000) / 1000000.0
 
-    xs_orig = [round_x(coord) for coord in feature['coordinates'][0][0]]
-    xs_round_tripped = [round_x(coord) for coord in round_tripped['coordinates'][0][0]]
+    xs_orig = [round_x(coord) for coord in feature["coordinates"][0][0]]
+    xs_round_tripped = [round_x(coord) for coord in round_tripped["coordinates"][0][0]]
     assert xs_round_tripped == xs_orig
 
 
 def test_circle_accumulating_error():
     feature = {
-        'type': 'MultiPolygon',
-        'coordinates': [[[]]],
+        "type": "MultiPolygon",
+        "coordinates": [[[]]],
     }
     points = 16
-    feature['coordinates'][0][0] = [
+    feature["coordinates"][0][0] = [
         [math.cos(math.pi * 2.0 * i / points), math.sin(math.pi * 2.0 * i / points)]
         for i in range(0, points + 1)
     ]
@@ -76,8 +77,10 @@ def test_circle_accumulating_error():
         x, y = coord
         return [round(x * 1000000), round(y * 1000000)]
 
-    ring_orig = [round_coord(coord) for coord in feature['coordinates'][0][0]]
-    ring_round_tripped = [round_coord(coord) for coord in round_tripped['coordinates'][0][0]]
+    ring_orig = [round_coord(coord) for coord in feature["coordinates"][0][0]]
+    ring_round_tripped = [
+        round_coord(coord) for coord in round_tripped["coordinates"][0][0]
+    ]
     assert ring_round_tripped == ring_orig
 
 
@@ -90,24 +93,24 @@ def test_dimensions():
     Using dim=3 must conserve the altitude
     """
     feature = {
-        'type': 'MultiPolygon',
-        'coordinates': [[[]]],
+        "type": "MultiPolygon",
+        "coordinates": [[[]]],
     }
     points = 8
     # Z coordinates[0, 1, 2, 3, ... , 8, 0]
-    feature['coordinates'][0][0] = [[0, 0, i] for i in range(0, points + 1)]
-    feature['coordinates'][0][0].append([0, 0, 0])
+    feature["coordinates"][0][0] = [[0, 0, i] for i in range(0, points + 1)]
+    feature["coordinates"][0][0].append([0, 0, 0])
 
     pbf = Encoder().encode(feature, dim=2)
     dim2 = Decoder().decode(pbf)
 
-    dim2_orig = [[x, y] for x, y, z in feature['coordinates'][0][0]]
-    dim2 = dim2['coordinates'][0][0]
+    dim2_orig = [[x, y] for x, y, z in feature["coordinates"][0][0]]
+    dim2 = dim2["coordinates"][0][0]
     assert dim2 == dim2_orig
 
     pbf = Encoder().encode(feature, dim=3)
     dim3 = Decoder().decode(pbf)
 
-    dim_orig = feature['coordinates'][0][0]
-    dim3 = dim3['coordinates'][0][0]
+    dim_orig = feature["coordinates"][0][0]
+    dim3 = dim3["coordinates"][0][0]
     assert dim3 == dim_orig

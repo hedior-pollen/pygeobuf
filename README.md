@@ -34,7 +34,7 @@ It serves as a prototyping playground, with faster implementations in JS and C++
 
 |                     | normal    | gzipped
 | ------------------- | --------- | --------
-| us-zips.json 	      | 101.85 MB | 26.67 MB
+| us-zips.json        | 101.85 MB | 26.67 MB
 | us-zips.pbf         | 12.24 MB  | 10.48 MB
 | us-zips.topo.json   | 15.02 MB  | 3.19 MB
 | us-zips.topo.pbf    | 4.85 MB   | 2.72 MB

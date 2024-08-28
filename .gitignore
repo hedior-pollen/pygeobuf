@@ -2,3 +2,7 @@
 fixtures/tmp
 fixtures/*.pbf
 fixtures/*.pbf.json
+
+__pycache__
+*.egg-info
+.pytest_cache
